@@ -140,7 +140,7 @@ class Fighter():
                     [self.agent_path], 
                     input=input_data.encode(), 
                     capture_output=True, 
-                    timeout=0.1
+                    timeout=0.4
                 )
                 resultJson = json.loads(result.stdout.decode())
                 if resultJson['debug'] is not None:
@@ -154,7 +154,7 @@ class Fighter():
                     [python_cmd, self.agent_path], 
                     input=input_data.encode(), 
                     capture_output=True, 
-                    timeout=0.1
+                    timeout=0.4
                 )
                 resultJson = json.loads(result.stdout.decode())
                 if resultJson['debug'] is not None:
@@ -174,7 +174,7 @@ class Fighter():
                     ['java', '-cp', class_path, class_name], 
                     input=input_data.encode(), 
                     capture_output=True,
-                    timeout=1
+                    timeout=0.4
                 )
                 resultJson = json.loads(result.stdout.decode())
                 if resultJson['debug'] is not None:
