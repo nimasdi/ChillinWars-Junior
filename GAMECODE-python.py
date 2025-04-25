@@ -237,7 +237,20 @@ def draw_mode_text():
     screen.blit(mode_surface, (sc_width//2 - mode_surface.get_width()//2, 10))
 
 run=True
+
+# rem_frames = 1000
+flag = True
 while run:
+    # rem_frames -= 1
+    # if rem_frames == 0:
+    #     if F1.health == F2.health:
+    #         print("Draw")
+    #     elif F1.health > F2.health:
+    #         print("F1 wins" , F1.health , F2.health)
+    #     else:
+    #         print("F2 wins" , F1.health , F2.health)
+    #     break
+
     clock.tick(FPS)
     drawbg()
     
@@ -245,8 +258,15 @@ while run:
     draw_mode_text()
     
     if intro_count<=0:
-        F1.move(sc_width,sc_height,screen,F2,round_over)
-        F2.move(sc_width,sc_height,screen,F1,round_over)
+        if flag:
+            F1.move(sc_width,sc_height,screen,F2,round_over)
+            F2.move(sc_width,sc_height,screen,F1,round_over)
+            flag = False
+        else:
+            F2.move(sc_width,sc_height,screen,F1,round_over)
+            F1.move(sc_width,sc_height,screen,F2,round_over)
+            flag = True
+
     else:
         drawtimer(intro_count)       
         if(pygame.time.get_ticks()-last_count)>=1000:

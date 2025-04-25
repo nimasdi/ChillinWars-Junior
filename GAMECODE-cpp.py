@@ -238,6 +238,7 @@ def draw_mode_text():
     screen.blit(mode_surface, (sc_width//2 - mode_surface.get_width()//2, 10))
 
 run=True
+flag = True
 while run:
     clock.tick(FPS)
     drawbg()
@@ -246,8 +247,14 @@ while run:
     draw_mode_text()
     
     if intro_count<=0:
-        F1.move(sc_width,sc_height,screen,F2,round_over)
-        F2.move(sc_width,sc_height,screen,F1,round_over)
+        if flag:
+            F1.move(sc_width,sc_height,screen,F2,round_over)
+            F2.move(sc_width,sc_height,screen,F1,round_over)
+            flag = False
+        else:
+            F2.move(sc_width,sc_height,screen,F1,round_over)
+            F1.move(sc_width,sc_height,screen,F2,round_over)
+            flag = True
     else:
         drawtimer(intro_count)       
         if(pygame.time.get_ticks()-last_count)>=1000:
