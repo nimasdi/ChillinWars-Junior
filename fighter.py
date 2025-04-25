@@ -1,6 +1,6 @@
 import pygame
 from pygame import mixer
-import pygame.gfxdraw  # Import for drawing rounded rectangles
+import pygame.gfxdraw  
 import subprocess
 import json
 import os
@@ -20,48 +20,46 @@ def is_linux():
 def get_python_command():
     if is_windows():
         return 'python'
-    else:  # macOS or Linux
+    else:  
         return 'python3'
 
-#used for running the python agent with a timeout
+
 def validate_move(move_dict):
-    """Validate the move dictionary structure"""
     valid = True
     required_keys = ['move', 'attack', 'jump', 'dash' , 'debug', 'saved_data']
     
-    # Check if all required keys exist
+    
     for key in required_keys:
         if key not in move_dict:
             valid = False
             break
     
-    # Validate move value
+    
     if move_dict.get('move') not in [None, 'left', 'right']:
         valid = False
     
-    # Validate attack value
+    
     if move_dict.get('attack') not in [None, 1, 2]:
         valid = False
     
-    # Validate jump value
+    
     if not isinstance(move_dict.get('jump'), bool):
         valid = False
     
-    # Validate roll value
+    
     if move_dict.get('dash') not in [None, 'left', 'right']:
         valid = False
 
-    # if move_dict.get('debug') is None:
-    #     valid = False
+    
+    
     
     return valid
 
 def load_agent_module(agent_path):
-    """Load a Python agent module dynamically"""
     if not agent_path.endswith('.py'):
         return None
         
-    module_name = os.path.basename(agent_path)[:-3]  # Remove .py extension
+    module_name = os.path.basename(agent_path)[:-3]  
     spec = importlib.util.spec_from_file_location(module_name, agent_path)
     if spec is None:
         return None
@@ -78,7 +76,7 @@ class Fighter():
         self.ofset=data[2]
         self.flip=Flip
         self.anm_list=self.loadimage(spritesheet, animationstep)   
-        # 0:Still 1:Run 2:Jump 3:Attack1 4:Attack2 5:Damage 6:Die 7:fall 8:dash
+        
         self.action=0
         self.frame=0
         self.image=self.anm_list[self.action][self.frame]
@@ -95,14 +93,14 @@ class Fighter():
         self.hit=False
         self.health=100
         self.alive=True
-        self.is_ai = False  # Flag to indicate if this fighter is AI-controlled
-        self.dashing = False  # Renamed from rolling to dashing
-        self.dash_cooldown = 0  # Cooldown for dashing
-        self.dash_timer = 0  # Timer to track dash duration
+        self.is_ai = False  
+        self.dashing = False  
+        self.dash_cooldown = 0  
+        self.dash_timer = 0  
         self.dash_dir = None
         self.saved_data = {}
         
-        # Agent configuration
+        
         self.agent_info = agent_info
         self.agent_module = None
         if agent_info and agent_info.get('enabled', False):
@@ -110,9 +108,9 @@ class Fighter():
             self.agent_language = agent_info.get('language', 'python')
             self.agent_path = agent_info.get('path', 'agent.py')
             
-            # Load Python module if it's a Python agent
-            # if self.agent_language == 'python':
-            #     self.agent_module = load_agent_module(self.agent_path)
+            
+            
+            
 
     def loadimage(self,spritesheet,animationstep):
         anm_list=[]
@@ -126,18 +124,18 @@ class Fighter():
         return anm_list
 
     def call_external_agent(self, fighter_info, opponent_info):
-        """Call an external agent (C++ or Java) via subprocess"""
+
         try:
-            # Convert the dictionaries to JSON strings
+            
             input_data = json.dumps({
                 "fighter": fighter_info,
                 "opponent": opponent_info,
                 "saved_data": self.saved_data
             })
-            # print("saved input_data", self.saved_data)
+            
             
             if self.agent_language == 'cpp':
-                # Call C++ executable
+                
                 result = subprocess.run(
                     [self.agent_path], 
                     input=input_data.encode(), 
@@ -150,7 +148,7 @@ class Fighter():
                 self.saved_data = resultJson['saved_data']
                 return resultJson
             elif self.agent_language == 'python':
-                # Call Python agent with the appropriate command for the OS
+                
                 python_cmd = get_python_command()
                 result = subprocess.run(
                     [python_cmd, self.agent_path], 
@@ -165,7 +163,7 @@ class Fighter():
                 return resultJson
                 
             elif self.agent_language == 'java':
-                # Call Java program
+                
                 class_path = ""
                 if is_windows():
                     class_path = '".;json.jar"' 
@@ -191,7 +189,7 @@ class Fighter():
 
     def move(self, sc_width, sc_height, surface, target, round_over):
         SPEED = 5
-        DASH_SPEED = 30  # Fixed speed for the dash
+        DASH_SPEED = 30  
         gravity = 2
         dx = 0
         dy = 0
@@ -203,24 +201,24 @@ class Fighter():
 
         if self.dashing:
             self.dash_timer -= 1
-            if self.flip:  # Move left if flipped
+            if self.flip:  
                 if self.dash_dir == 'left':
                     self.rect.x -= DASH_SPEED
                 else:
                     self.rect.x += DASH_SPEED
-            else:  # Move right otherwise
+            else:  
                 if self.dash_dir == 'right':
                     self.rect.x += DASH_SPEED
                 else:
                     self.rect.x -= DASH_SPEED
-            # self.rect.x -= DASH_SPEED
+            
             if self.dash_timer <= 0:
-                self.dashing = False  # End dash
-                self.image = self.anm_list[self.action][self.frame]  # Restore the image
-            return  # Skip further movement logic during dash
+                self.dashing = False  
+                self.image = self.anm_list[self.action][self.frame]  
+            return  
 
         if self.is_ai and self.attacking == False and self.alive == True and round_over == False:
-            # Get fighter info 
+            
             fighter_info = {
                 'x': self.rect.centerx,
                 'y': self.rect.centery,
@@ -231,7 +229,7 @@ class Fighter():
                 'dash_cooldown': self.dash_cooldown
             }
             
-            # Get opponent info 
+            
             opponent_info = {
                 'x': target.rect.centerx,
                 'y': target.rect.centery,
@@ -240,15 +238,15 @@ class Fighter():
             }
             
             ai_move = None
-            # if self.agent_language == 'python' and self.agent_module:
-            #     if hasattr(self.agent_module, 'make_move'):
-            #         ai_move = self.agent_module.make_move(fighter_info, opponent_info)
-            # else:
-            #     ai_move = self.call_external_agent(fighter_info, opponent_info)
+            
+            
+            
+            
+            
 
             ai_move = self.call_external_agent(fighter_info, opponent_info)
             
-            # Validate and execute move
+            
             if ai_move and validate_move(ai_move):
                 if ai_move['move'] == 'right':
                     dx = SPEED
@@ -269,28 +267,28 @@ class Fighter():
                     self.dashing = True
                     self.dash_cooldown = 50
                     self.dash_timer = 10
-                    self.flip = False  # Ensure facing direction is correct
+                    self.flip = False  
                     self.dash_dir = 'right'
                 elif ai_move.get('dash') == 'left' and self.dash_cooldown == 0:
                     self.dashing = True
                     self.dash_cooldown = 50
                     self.dash_timer = 10
-                    self.flip = True  # Ensure facing direction is correct
+                    self.flip = True  
                     self.dash_dir = 'left'
             else:
                 print("Invalid move from AI agent:", self.player ,ai_move)
             
-            # Update facing direction based on opponent position
+            
             if target.rect.centerx > self.rect.centerx:
                 self.flip = False
             else:
                 self.flip = True
         
-        # Handle player-controlled movement
+        
         elif not self.is_ai:
             key=pygame.key.get_pressed()
             if self.attacking==False and self.alive==True and round_over==False:
-                # movement for p1
+                
                 if self.player==1:
                     if key[pygame.K_d]:
                         dx=SPEED
@@ -299,12 +297,12 @@ class Fighter():
                     if key[pygame.K_a] and dx<360:
                         dx=-SPEED
                         self.running=True
-                    # jump
+                    
                     if key[pygame.K_w] and self.jump==False:
                         self.vely=-30
                         self.jump=True
 
-                    # attack
+                    
                     if key[pygame.K_q] or key[pygame.K_e]:
                         if key[pygame.K_q]:
                             self.attack_type=1
@@ -312,17 +310,17 @@ class Fighter():
                             self.attack_type=2
                         self.attack(target)
 
-                    # Dash mechanism for player 1
+                    
                     if key[pygame.K_LSHIFT] and key[pygame.K_d] and self.dash_cooldown == 0:
                         self.dashing = True
                         self.dash_cooldown = 50
                         self.dash_timer = 10
-                        self.flip = False  # Ensure facing direction is correct
+                        self.flip = False  
                     elif key[pygame.K_LSHIFT] and key[pygame.K_a] and self.dash_cooldown == 0:
                         self.dashing = True
                         self.dash_cooldown = 50
                         self.dash_timer = 10
-                        self.flip = True  # Ensure facing direction is correct
+                        self.flip = True  
 
                 if self.player==2:
                     if key[pygame.K_RIGHT]:
@@ -331,12 +329,12 @@ class Fighter():
                     if key[pygame.K_LEFT] and dx<360:
                         dx=-SPEED
                         self.running=True
-                    # jump
+                    
                     if key[pygame.K_UP] and self.jump==False:
                         self.vely=-30
                         self.jump=True
 
-                    # attack
+                    
                     if key[pygame.K_KP1] or key[pygame.K_KP2]:
                         if key[pygame.K_KP1]:
                             self.attack_type=1
@@ -344,17 +342,17 @@ class Fighter():
                             self.attack_type=2
                         self.attack(target)
 
-                    # Dash mechanism for player 2
+                    
                     if key[pygame.K_RSHIFT] and key[pygame.K_RIGHT] and self.dash_cooldown == 0:
                         self.dashing = True
                         self.dash_cooldown = 50
                         self.dash_timer = 10
-                        self.flip = False  # Ensure facing direction is correct
+                        self.flip = False  
                     elif key[pygame.K_RSHIFT] and key[pygame.K_LEFT] and self.dash_cooldown == 0:
                         self.dashing = True
                         self.dash_cooldown = 50
                         self.dash_timer = 10
-                        self.flip = True  # Ensure facing direction is correct
+                        self.flip = True  
 
         self.vely+=gravity
         dy+=self.vely
@@ -368,7 +366,7 @@ class Fighter():
             self.jump=False
             dy=sc_height - 70 - self.rect.bottom
 
-        # Only update facing direction if not dashing
+        
         if not self.dashing:
             if not self.is_ai:
                 if self.player == 1 and key[pygame.K_a]:
@@ -390,7 +388,7 @@ class Fighter():
         self.rect.y +=dy
 
     def update(self):
-        # check performed action 
+        
         if self.health<=0:
             self.health=0
             self.alive=False
@@ -403,7 +401,7 @@ class Fighter():
             if self.attack_type==2:
                 self.update_action(4)
         elif self.dashing == True:
-            self.image = None  # Make the fighter disappear during dash
+            self.image = None  
         elif self.jump==True:
             self.update_action(2)
         elif self.running==True:
@@ -413,7 +411,7 @@ class Fighter():
 
             
         cooldown=70
-        if self.image is not None:  # Skip animation update if dashing
+        if self.image is not None:  
             self.image=self.anm_list[self.action][self.frame]
             if pygame.time.get_ticks() - self.update_time>cooldown:
                 self.frame+=1
@@ -436,7 +434,7 @@ class Fighter():
         if (self.attack_cooldown[0] == 0 and self.attack_type == 1) or (self.attack_cooldown[1] == 0 and self.attack_type == 2):
             self.attacking=True
             self.attack_misssound.play()
-            # make the hit more bigger
+            
             attack_range_height = self.rect.height
             attack_range_width = self.rect.width
             attack_rect=pygame.Rect(self.rect.centerx - (attack_range_width*self.flip), self.rect.y, attack_range_width, attack_range_height)
@@ -445,13 +443,13 @@ class Fighter():
                 target.health-= 10 * self.attack_type
                 target.hit=True
 
-            # pygame.draw.rect(surface,(0,255,0),attack_rect)
+            
     
     def update_action(self,new_action):
-        #if new action if sifferent to previous one
+        
         if new_action!=self.action:
             self.action=new_action
-            #updated animantion
+            
             self.frame=0
             self.update_time=pygame.time.get_ticks()
 
@@ -484,11 +482,11 @@ class Fighter():
                 ],
                 shadow_color,
             )
-        elif self.image is not None:  # Only draw if the image is not None
+        elif self.image is not None:  
             img = pygame.transform.flip(self.image, self.flip, False)
-            # attack_range_height = self.rect.height
-            # attack_range_width = self.rect.width
-            # attack_rect=pygame.Rect(self.rect.centerx - (attack_range_width*self.flip), self.rect.y, attack_range_width, attack_range_height)
-            # pygame.draw.rect(surface, (255,0,0), attack_rect)
-            # pygame.draw.rect(surface, (50, 20, 60), self.rect)
+            
+            
+            
+            
+            
             surface.blit(img, (self.rect.x - (self.ofset[0] - self.img_scale), self.rect.y - (self.ofset[1] - self.img_scale)))
