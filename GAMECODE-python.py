@@ -238,18 +238,18 @@ def draw_mode_text():
 
 run=True
 
-# rem_frames = 1000
+rem_frames = 3600
 flag = True
 while run:
-    # rem_frames -= 1
-    # if rem_frames == 0:
-    #     if F1.health == F2.health:
-    #         print("Draw")
-    #     elif F1.health > F2.health:
-    #         print("F1 wins" , F1.health , F2.health)
-    #     else:
-    #         print("F2 wins" , F1.health , F2.health)
-    #     break
+    rem_frames -= 1
+    if rem_frames == 0:
+        if F1.health == F2.health:
+            print("Draw")
+        elif F1.health > F2.health:
+            print("F1 wins" , F1.health , F2.health)
+        else:
+            print("F2 wins" , F1.health , F2.health)
+        break
 
     clock.tick(FPS)
     drawbg()
